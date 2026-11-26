@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PHOSPHOR CRT-5 · 复古荧光示波器</title>
+<style>
+:root{
+  --silk:#ebe4d1;      /* 面板丝印 */
+  --silk2:#a9a390;
+  --accent:#e2702e;
+  --panel:#3a3c37;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#080808}
+body{
+  font-family:"Helvetica Neue",Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  color:var(--silk);
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased;
+  touch-action:manipulation;
+}
+.room{position:fixed;inset:0;background:radial-gradient(ellipse 95% 75% at 50% 14%,#2e302d 0%,#1a1b19 50%,#0a0a0a 100%)}
+/* 固定且裁切的舞台：避免机身溢出把移动端的布局视口撑大 */
+.stage{position:fixed;inset:0;overflow:hidden}
+
+/* ================= 机身 ================= */
+.scope{position:absolute;left:50%;top:50%;width:1200px;height:700px;transform:translate(-50%,-50%);transform-origin:50% 50%;touch-action:none}
+.scope[data-layout="tall"]{width:720px;height:1210px}
+.chassis{
+  position:absolute;inset:0;display:grid;border-radius:28px;padding:22px 30px 26px;
+  background-color:var(--panel);
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.075) 0%,rgba(255,255,255,0) 16%,rgba(0,0,0,0) 72%,rgba(0,0,0,.3) 100%),
+    var(--noise,none);
+  background-size:auto,180px 180px;
+  box-shadow:
+    0 60px 100px -30px rgba(0,0,0,.85),
+    0 20px 34px rgba(0,0,0,.45),
+    inset 0 2px 0 rgba(255,255,255,.14),
+    inset 0 -4px 0 rgba(0,0,0,.35),
+    inset 0 0 0 1px rgba(0,0,0,.6),
+    inset 0 0 0 4px rgba(255,255,255,.025);
+}
+.scope[data-layout="wide"] .chassis{grid-template-columns:672px 1fr;grid-template-rows:58px 1fr;column-gap:30px;grid-template-areas:"brand brand" "screen controls"}
+.scope[data-layout="tall"] .chassis{grid-template-columns:672px;grid-template-rows:58px auto 1fr;row-gap:16px;padding:22px 24px 26px;grid-template-areas:"brand" "screen" "controls"}
+
+.screw{position:absolute;width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#dfe2e5,#8d9297 48%,#3f4346 100%);
+  box-shadow:0 1px 2px rgba(0,0,0,.7),inset 0 0 0 1px rgba(0,0,0,.35)}
+.screw::after{content:"";position:absolute;left:2px;right:2px;top:6px;height:2px;border-radius:1px;background:#2a2d30;box-shadow:0 1px 0 rgba(255,255,255,.3);transform:rotate(var(--r,30deg))}
+.screw.tl{left:9px;top:9px}.screw.tr{right:9px;top:9px;--r:-50deg}.screw.bl{left:9px;bottom:9px;--r:80deg}.screw.br{right:9px;bottom:9px;--r:12deg}
+
+.brand{grid-area:brand;display:flex;align-items:center;gap:20px;padding:0 6px 12px;border-bottom:1px solid rgba(0,0,0,.42);box-shadow:0 1px 0 rgba(255,255,255,.05)}
+.logo{display:flex;align-items:center;gap:11px}
+.logo b{font-size:23px;font-weight:800;letter-spacing:.26em;color:var(--silk);text-shadow:0 -1px 0 rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.06)}
+.logo span{font-size:11px;font-weight:800;letter-spacing:.16em;color:#1d1c19;background:var(--accent);padding:4px 7px 3px;border-radius:3px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.25)}
+.model{font-size:10px;letter-spacing:.22em;color:var(--silk2);line-height:1.6;white-space:nowrap}
+.model b{color:var(--silk);font-weight:700;letter-spacing:.3em}
+.vent{margin-left:auto;display:flex;gap:6px}
+.vent i{width:4px;height:24px;border-radius:2px;background:#121311;box-shadow:inset 0 1px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.07)}
+
+/* ================= 屏幕：外框 → 深陷的隧道 → 曲面玻璃 ================= */
+.screen{grid-area:screen;display:flex;flex-direction:column;gap:10px}
+.bezel{position:relative;width:672px;height:552px;padding:22px;border-radius:42px;
+  background:linear-gradient(165deg,#2b2c2a 0%,#171816 50%,#0d0d0c 100%);
+  box-shadow:0 1px 0 rgba(255,255,255,.12),0 -1px 0 rgba(0,0,0,.7),0 16px 28px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.13),inset 0 -2px 4px rgba(0,0,0,.6)}
+.bs{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a3a8ad,#4d5155 60%,#25282a);box-shadow:0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(0,0,0,.5)}
+.bs::after{content:"";position:absolute;left:2px;right:2px;top:4px;height:2px;background:#16181a;transform:rotate(var(--r,20deg))}
+.bs.a{left:15px;top:15px}.bs.b{right:15px;top:15px;--r:-35deg}.bs.c{left:15px;bottom:15px;--r:70deg}.bs.d{right:15px;bottom:15px;--r:5deg}
+.tunnel{position:relative;width:100%;height:100%;padding:14px;border-radius:32px;
+  background:linear-gradient(180deg,#020202 0%,#080808 40%,#161715 100%);
+  box-shadow:inset 0 26px 30px rgba(0,0,0,.95),inset 0 -8px 14px rgba(255,255,255,.045),inset 16px 0 20px rgba(0,0,0,.55),inset -16px 0 20px rgba(0,0,0,.55),0 0 0 1px #000}
+/* 开机后荧光映在隧道内壁上 */
+.tunnel::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .5s;
+  box-shadow:inset 0 0 14px 1px rgba(70,255,130,.09),inset 0 -12px 16px rgba(70,255,130,.05)}
+.powered .tunnel::after{opacity:1;transition:opacity 1s .4s}
+.glass{position:relative;width:600px;height:480px;border-radius:30px;overflow:hidden;background:#0a0f0b;isolation:isolate;
+  box-shadow:0 0 0 1px rgba(0,0,0,.95),0 0 0 3px rgba(60,72,62,.22)}
+.glass canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+#scan{mix-blend-mode:multiply;pointer-events:none}
+/* 暗角 + 上沿被外框遮挡的阴影 */
+.vig{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(ellipse 74% 70% at 50% 47%,rgba(0,0,0,0) 55%,rgba(0,0,0,.36) 84%,rgba(0,0,0,.8) 100%);
+  box-shadow:inset 0 18px 22px -8px rgba(0,0,0,.85),inset 0 0 26px 6px rgba(0,0,0,.7),inset 0 0 2px 1px rgba(0,0,0,.95)}
+/* 曲面玻璃的反光 */
+.refl{position:absolute;inset:0;border-radius:inherit;pointer-events:none;mix-blend-mode:screen;
+  background:
+    radial-gradient(ellipse 58% 34% at 30% 8%,rgba(210,255,225,.12) 0%,rgba(210,255,225,.04) 48%,rgba(210,255,225,0) 72%),
+    radial-gradient(ellipse 34% 20% at 82% 93%,rgba(210,255,225,.045),rgba(210,255,225,0) 70%),
+    linear-gradient(170deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,0) 32%)}
+.refl::before{content:"";position:absolute;left:7%;right:7%;top:1.8%;height:24%;border-radius:50%/100% 100% 0 0;border-top:2px solid rgba(255,255,255,.12);filter:blur(1px)}
+.refl::after{content:"";position:absolute;left:65%;top:8%;width:19%;height:14%;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,0));transform:skewX(-10deg);filter:blur(4px)}
+.caption{display:flex;justify-content:space-between;padding:0 20px;font-size:9.5px;letter-spacing:.26em;color:var(--silk2);white-space:nowrap}
+.caption b{color:var(--silk);font-weight:700}
+
+/* ================= 控制区 ================= */
+.controls{grid-area:controls;display:grid;min-height:0}
+.scope[data-layout="wide"] .controls{grid-template-columns:1fr 150px;grid-template-rows:auto auto 1fr;gap:18px 16px;grid-template-areas:"knobs knobs" "modes modes" "io power"}
+.scope[data-layout="tall"] .controls{grid-template-columns:1fr 170px;grid-template-rows:auto auto 1fr;gap:20px 22px;grid-template-areas:"knobs knobs" "modes power" "io power"}
+.knobs{grid-area:knobs;display:flex;justify-content:space-between;padding:14px 8px 12px;border-radius:18px;
+  background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.09));
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.25),0 1px 0 rgba(255,255,255,.06)}
+.scope[data-layout="tall"] .knobs{justify-content:space-around}
+.knob{position:relative;width:132px;display:flex;flex-direction:column;align-items:center;outline:none;border-radius:12px}
+.knob canvas{width:132px;height:132px;display:block;touch-action:none;cursor:grab}
+.knob.drag canvas{cursor:grabbing}
+.knob .lbl{margin-top:4px;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.2em;padding-left:.2em}
+.knob .lbl small{display:block;margin-top:4px;font-size:10px;font-weight:500;letter-spacing:.25em;color:var(--silk2)}
+.kbd-nav .knob:focus{box-shadow:0 0 0 2px rgba(125,255,154,.45)}
+
+.modes{grid-area:modes;display:flex;flex-direction:column;gap:10px;padding:0 4px}
+.stitle{display:flex;align-items:center;gap:10px;font-size:9.5px;font-weight:800;letter-spacing:.26em;color:var(--silk2)}
+.stitle::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(235,228,209,.32),rgba(235,228,209,0))}
+.keys{display:flex;gap:12px;align-self:flex-start;padding:10px 10px 13px;border-radius:11px;background:#1a1b19;
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.85),inset 0 0 0 1px rgba(0,0,0,.5),0 1px 0 rgba(255,255,255,.07)}
+.key{appearance:none;-webkit-appearance:none;border:0;cursor:pointer;width:188px;height:58px;border-radius:7px;position:relative;
+  display:flex;align-items:center;gap:10px;padding:0 12px;font:inherit;color:#26251f;text-align:left;outline:none;
+  background:linear-gradient(180deg,#ebe5d4 0%,#d2cbb7 55%,#bfb8a3 100%);
+  box-shadow:0 7px 0 #6b6555,0 9px 14px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -2px 0 rgba(0,0,0,.08);
+  transform:translateY(-3px);transition:transform .08s ease-out,box-shadow .08s ease-out}
+.key:active{transform:translateY(2px);box-shadow:0 2px 0 #6b6555,0 3px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.6)}
+.key[aria-pressed="true"]{transform:translateY(2px);background:linear-gradient(180deg,#dcd6c4 0%,#c6bfaa 60%,#b3ac97 100%);
+  box-shadow:0 2px 0 #6b6555,0 3px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.55),inset 0 3px 7px rgba(0,0,0,.14)}
+.kbd-nav .key:focus{outline:2px solid rgba(125,255,154,.6);outline-offset:3px}
+.key .led{width:9px;height:9px;border-radius:50%;flex:none;background:radial-gradient(circle at 35% 35%,#425c47,#18261b);box-shadow:inset 0 1px 2px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.25)}
+.powered .key[aria-pressed="true"] .led{background:radial-gradient(circle at 35% 35%,#efffef,#5cff86 40%,#119036 100%);box-shadow:0 0 8px 2px rgba(90,255,130,.55),0 0 0 1px rgba(0,0,0,.2)}
+.key svg{width:30px;height:24px;flex:none}
+.key .t{display:flex;flex-direction:column;line-height:1.2}
+.key .t b{font-size:14px;letter-spacing:.08em}
+.key .t small{font-size:9px;letter-spacing:.1em;color:#5b574a;font-weight:800;white-space:nowrap}
+.key .t b{white-space:nowrap}
+
+.io{grid-area:io;align-self:end;display:flex;flex-direction:column;gap:16px;padding:0 4px 2px}
+.jacks{display:flex;gap:24px;align-items:flex-end}
+.jack{display:flex;flex-direction:column;align-items:center;gap:9px;font-size:9px;font-weight:800;letter-spacing:.2em;padding-left:.2em}
+.jack small{display:block;font-weight:500;color:var(--silk2);letter-spacing:.1em;margin-top:3px;text-align:center}
+.bnc{width:44px;height:44px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 36% 30%,#f2f4f6 0%,#a9aeb3 30%,#5b6065 62%,#2c2f32 100%);
+  box-shadow:0 3px 6px rgba(0,0,0,.6),0 0 0 3px #222321,0 0 0 4px rgba(255,255,255,.06)}
+.bnc::before{content:"";position:absolute;inset:9px;border-radius:50%;background:radial-gradient(circle,#101112 0 42%,#2a2c2e 46%,#8d9297 72%,#cdd1d5 100%)}
+.bnc::after{content:"";position:absolute;left:19px;top:19px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff1b8,#d4a93e 60%,#7a5a14)}
+.post{width:30px;height:30px;border-radius:50%;margin:7px;background:radial-gradient(circle at 36% 30%,#ffa173,#d4471a 55%,#6e1e05);box-shadow:0 3px 5px rgba(0,0,0,.6),0 0 0 3px #222321}
+.hint{font-size:10px;letter-spacing:.1em;color:var(--silk2);line-height:1.9}
+.hint kbd{font-family:inherit;font-size:9px;font-weight:700;padding:0 5px;border-radius:3px;border:1px solid rgba(235,228,209,.35);color:var(--silk);margin:0 2px}
+
+/* 电源角：拨片开关 + 指示灯 */
+.power{grid-area:power;justify-self:end;align-self:end;position:relative;width:150px;height:236px;border-radius:16px;
+  background:linear-gradient(180deg,#272826,#1b1c1a);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.05)}
+.scope[data-layout="tall"] .power{width:170px}
+.pt{position:absolute;left:15px;top:13px;font-size:11px;font-weight:800;letter-spacing:.24em}
+.pt small{display:block;font-size:9.5px;font-weight:500;letter-spacing:.4em;color:var(--silk2);margin-top:4px}
+.lamp{position:absolute;right:15px;top:13px;width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle,#2f3235 0 50%,#121416 54%,#a1a7ac 60%,#575c60 80%,#2b2e31 100%);box-shadow:0 2px 3px rgba(0,0,0,.6)}
+.lamp i{position:absolute;inset:7px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#7b4c2c 0%,#3d1a08 55%,#1a0802 100%);box-shadow:inset 0 1px 2px rgba(0,0,0,.7)}
+.powered .lamp i{background:radial-gradient(circle at 38% 32%,#fff7d6 0%,#ffc04e 28%,#f27b17 60%,#8c2f00 100%);
+  box-shadow:0 0 10px 3px rgba(255,150,40,.6),0 0 28px 9px rgba(255,120,20,.22),inset 0 -1px 2px rgba(120,30,0,.6);animation:lamp .55s linear}
+@keyframes lamp{0%{opacity:.15}10%{opacity:1}20%{opacity:.4}34%{opacity:1}48%{opacity:.75}100%{opacity:1}}
+.onl,.offl{position:absolute;left:0;right:0;text-align:center;font-size:10px;font-weight:800;letter-spacing:.3em;padding-left:.3em;pointer-events:none}
+.onl{top:66px}.offl{bottom:14px}
+#toggle{position:absolute;left:50%;top:62px;width:120px;height:150px;margin-left:-60px;touch-action:none;cursor:pointer;outline:none;border-radius:12px}
+.kbd-nav #toggle:focus{box-shadow:0 0 0 2px rgba(125,255,154,.45)}
+</style>
+</head>
+<body>
+<div class="room"></div>
+
+<div class="stage" id="stage">
+<div class="scope" id="scope" data-layout="wide">
+  <div class="chassis">
+    <i class="screw tl"></i><i class="screw tr"></i><i class="screw bl"></i><i class="screw br"></i>
+
+    <header class="brand">
+      <div class="logo"><b>PHOSPHOR</b><span>CRT-5</span></div>
+      <div class="model"><b>ANALOG OSCILLOSCOPE</b> · 模拟示波器<br>DUAL TRACE · X-Y · P31 GREEN</div>
+      <div class="vent"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </header>
+
+    <section class="screen">
+      <div class="bezel">
+        <i class="bs a"></i><i class="bs b"></i><i class="bs c"></i><i class="bs d"></i>
+        <div class="tunnel">
+          <div class="glass" id="glass">
+            <canvas id="crt"></canvas>
+            <canvas id="scan"></canvas>
+            <div class="vig"></div>
+            <div class="refl"></div>
+          </div>
+        </div>
+      </div>
+      <div class="caption"><span>INTERNAL GRATICULE · <b>10 × 8 DIV</b></span><span>TIME/DIV <b>0.5 ms</b> · VOLTS/DIV <b>1 V</b></span></div>
+    </section>
+
+    <section class="controls">
+      <div class="knobs">
+        <div class="knob" id="k-freq" tabindex="0" role="slider" aria-label="频率" aria-valuemin="0" aria-valuemax="10">
+          <canvas></canvas><div class="lbl">FREQUENCY<small id="freq-sub">频率</small></div>
+        </div>
+        <div class="knob" id="k-amp" tabindex="0" role="slider" aria-label="振幅" aria-valuemin="0" aria-valuemax="10">
+          <canvas></canvas><div class="lbl">AMPLITUDE<small>振幅</small></div>
+        </div>
+        <div class="knob" id="k-phase" tabindex="0" role="slider" aria-label="X-Y 相位差" aria-valuemin="0" aria-valuemax="10">
+          <canvas></canvas><div class="lbl">PHASE<small>X-Y 相位差</small></div>
+        </div>
+      </div>
+
+      <div class="modes">
+        <div class="stitle">MODE · 显示模式</div>
+        <div class="keys">
+          <button class="key" data-mode="sum" aria-pressed="true">
+            <span class="led"></span>
+            <svg viewBox="0 0 30 24" aria-hidden="true"><path d="M1.5 12C3.5 3.5 6.5 2.5 8.6 7.6S12.6 21 15.6 16.4 20.6 3.4 23.6 7.8 27.4 18.6 28.6 12" fill="none" stroke="#2f2d26" stroke-width="1.9" stroke-linecap="round"/></svg>
+            <span class="t"><b>正弦叠加</b><small>Y-T · CH1+CH2</small></span>
+          </button>
+          <button class="key" data-mode="xy" aria-pressed="false">
+            <span class="led"></span>
+            <svg viewBox="0 0 30 24" aria-hidden="true"><path d="M15 12C19 3.5 27.5 3.5 27.5 12S19 20.5 15 12 2.5 3.5 2.5 12 11 20.5 15 12Z" fill="none" stroke="#2f2d26" stroke-width="1.9" stroke-linejoin="round"/></svg>
+            <span class="t"><b>利萨茹图形</b><small>X-Y · LISSAJOUS</small></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="io">
+        <div class="jacks">
+          <div class="jack"><div class="bnc"></div>CH1 · X<small>1MΩ 20pF</small></div>
+          <div class="jack"><div class="bnc"></div>CH2 · Y<small>1MΩ 20pF</small></div>
+          <div class="jack"><div class="post"></div>CAL<small>1V · 1kHz</small></div>
+        </div>
+        <div class="hint">拖拽旋钮旋转 · 滚轮微调 · 双击复位<br>快捷键 <kbd>P</kbd> 电源 <kbd>M</kbd> 切换模式</div>
+      </div>
+
+      <div class="power">
+        <div class="pt">POWER<small>电源</small></div>
+        <div class="lamp"><i></i></div>
+        <div class="onl">ON</div>
+        <canvas id="toggle" tabindex="0" role="switch" aria-checked="false" aria-label="电源开关"></canvas>
+        <div class="offl">OFF</div>
+      </div>
+    </section>
+  </div>
+</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeInCubic = t => t * t * t;
+const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOutBack = (t, s) => { const u = t - 1; return 1 + (s + 1) * u * u * u + s * u * u; };
+const norm3 = v => { const l = Math.hypot(v[0], v[1], v[2]); return [v[0] / l, v[1] / l, v[2] / l]; };
+
+const scopeEl = $('#scope');
+const LAYOUT = { wide: [1200, 700], tall: [720, 1210] };
+
+/* 统一光源：左上方。旋钮、开关的高光都按它实时计算 */
+const LIGHT = norm3([-0.5, -0.68, 0.72]);
+const HALF = norm3([LIGHT[0], LIGHT[1], LIGHT[2] + 1]);
+const LANG = Math.atan2(LIGHT[1], LIGHT[0]);
+const KMIN = -135 * Math.PI / 180, KMAX = 135 * Math.PI / 180;
+
+/* ================= 机箱喷漆颗粒纹理（运行时生成，不引用任何图片文件） ================= */
+(function makeNoise() {
+  const n = 180, c = document.createElement('canvas'); c.width = c.height = n;
+  const g = c.getContext('2d'), img = g.createImageData(n, n), d = img.data;
+  const blobs = [];
+  for (let i = 0; i < 70; i++) blobs.push([Math.random() * n, Math.random() * n, 3 + Math.random() * 12, Math.random() < .5 ? -1 : 1]);
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    let v = (Math.random() - .5) * 30;
+    for (let b = 0; b < blobs.length; b++) {
+      const B = blobs[b];
+      let dx = Math.abs(x - B[0]); if (dx > n / 2) dx = n - dx;
+      let dy = Math.abs(y - B[1]); if (dy > n / 2) dy = n - dy;
+      const q = (dx * dx + dy * dy) / (B[2] * B[2]);
+      if (q < 1) v += B[3] * 9 * (1 - q);
+    }
+    const i = (y * n + x) * 4, c0 = clamp(128 + v, 0, 255);
+    d[i] = d[i + 1] = d[i + 2] = c0; d[i + 3] = 26;
+  }
+  g.putImageData(img, 0, 0);
+  document.documentElement.style.setProperty('--noise', 'url(' + c.toDataURL() + ')');
+})();
+
+/* ================= 金属绘制工具 ================= */
+function metal(b) {
+  const v = clamp(b, 0, 1) * 255;
+  return 'rgb(' + (v * .99 | 0) + ',' + (v | 0) + ',' + (v * .975 | 0) + ')';
+}
+/* 车削（同心拉丝）铝面：高光呈指向光源的“蝴蝶结” */
+function spun(g, R, base, amp) {
+  const n = 120;
+  for (let i = 0; i < n; i++) {
+    const a0 = i / n * TAU, a1 = (i + 1.5) / n * TAU, am = (i + .5) / n * TAU;
+    const c = Math.cos(am - LANG);
+    g.fillStyle = metal(base + amp * Math.pow(Math.abs(c), 5) + .06 * c);
+    g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fill();
+  }
+  g.lineWidth = .45;
+  for (let r = 1.2, k = 0; r < R; r += .85, k++) {
+    g.strokeStyle = k % 2 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.055)';
+    g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
+  }
+}
+function bevel(g, r, w, hi, lo) {
+  const gr = g.createLinearGradient(-r * .72, -r * .72, r * .72, r * .72);
+  gr.addColorStop(0, 'rgba(255,255,255,' + hi + ')');
+  gr.addColorStop(.48, 'rgba(255,255,255,0)');
+  gr.addColorStop(.52, 'rgba(0,0,0,0)');
+  gr.addColorStop(1, 'rgba(0,0,0,' + lo + ')');
+  g.strokeStyle = gr; g.lineWidth = w;
+  g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke();
+}
+
+/* ================= 旋钮 ================= */
+/* 静态部分：面板刻度、投影、拉丝铝裙边、胶木顶面、铝帽（这些不随旋转变化） */
+function drawKnobStatic(g) {
+  const SILK = 'rgba(235,228,209,0.92)';
+  g.lineCap = 'round';
+  g.strokeStyle = 'rgba(235,228,209,0.42)'; g.lineWidth = .7;
+  g.beginPath(); g.arc(0, 0, 53.6, KMIN - Math.PI / 2, KMAX - Math.PI / 2); g.stroke();
+  g.strokeStyle = SILK;
+  for (let i = 0; i <= 50; i++) {
+    const a = KMIN + (KMAX - KMIN) * i / 50 - Math.PI / 2, major = i % 5 === 0;
+    const r0 = major ? 45.8 : 48.8;
+    g.lineWidth = major ? 1.5 : .75;
+    g.beginPath(); g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); g.lineTo(Math.cos(a) * 53.4, Math.sin(a) * 53.4); g.stroke();
+  }
+  g.fillStyle = SILK; g.font = '700 7.6px "Helvetica Neue",Arial,sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (let i = 0; i <= 10; i++) {
+    const a = KMIN + (KMAX - KMIN) * i / 10 - Math.PI / 2;
+    g.fillText(String(i), Math.cos(a) * 59.8, Math.sin(a) * 59.8 + .3);
+  }
+  // 投影（光在左上，影子落右下）
+  const sh = g.createRadialGradient(3.2, 5.2, 26, 3.2, 5.2, 47.5);
+  sh.addColorStop(0, 'rgba(0,0,0,0.62)'); sh.addColorStop(.5, 'rgba(0,0,0,0.3)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = sh; g.beginPath(); g.arc(3.2, 5.2, 47.5, 0, TAU); g.fill();
+  // 拉丝铝裙边
+  g.save(); g.beginPath(); g.arc(0, 0, 41, 0, TAU); g.clip();
+  spun(g, 41, .30, .32);
+  g.restore();
+  bevel(g, 40.4, 1.3, .42, .55);
+  // 胶木顶面
+  const bf = g.createLinearGradient(-18, -20, 16, 22);
+  bf.addColorStop(0, '#3e3e3c'); bf.addColorStop(.45, '#1b1b1a'); bf.addColorStop(1, '#060606');
+  g.fillStyle = bf; g.beginPath(); g.arc(0, 0, 26.2, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,0.12)'; g.lineWidth = 1.6;
+  g.beginPath(); g.arc(0, 0, 23.6, LANG - .85, LANG + .85); g.stroke();
+  g.fillStyle = 'rgba(0,0,0,0.6)'; g.beginPath(); g.arc(.7, 1.1, 21.4, 0, TAU); g.fill();
+  // 车削铝帽
+  g.save(); g.beginPath(); g.arc(0, 0, 20.6, 0, TAU); g.clip();
+  spun(g, 20.6, .5, .42);
+  let gr = g.createRadialGradient(-7, -8, 0, -7, -8, 15);
+  gr.addColorStop(0, 'rgba(255,255,255,0.3)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(-21, -21, 42, 42);
+  gr = g.createRadialGradient(0, 0, 13, 0, 0, 20.6);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.38)');
+  g.fillStyle = gr; g.fillRect(-21, -21, 42, 42);
+  g.restore();
+  bevel(g, 20.3, 1.1, .6, .5);
+}
+
+/* 动态部分：随角度旋转，并按每个小面的法线实时计算漫反射/镜面高光 */
+function drawKnobDynamic(g, ang) {
+  const ptr = ang - Math.PI / 2, ca = Math.cos(ptr), sa = Math.sin(ptr);
+  const seg = (r0, r1, ox, oy) => {
+    ox = ox || 0; oy = oy || 0;
+    g.beginPath(); g.moveTo(ca * r0 + ox, sa * r0 + oy); g.lineTo(ca * r1 + ox, sa * r1 + oy); g.stroke();
+  };
+  g.lineCap = 'round';
+  // 裙边上的橙色指针线
+  g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 3.2; seg(34.2, 40);
+  g.strokeStyle = '#f06a2c'; g.lineWidth = 1.9; seg(34.2, 40);
+
+  // 滚花环：28 道凹槽 × 3 个小面。转动时每个小面的朝向改变，高光会在棱上“游走”
+  const N = 28, w = TAU / N / 3, e = .006;
+  for (let j = 0; j < N; j++) {
+    const base = ptr + (j + .5) * TAU / N;
+    for (let s = -1; s <= 1; s++) {
+      const a = base + s * w, na = a + s * .8;
+      const nx = Math.cos(na) * .55, ny = Math.sin(na) * .55, nz = .835;
+      const d = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+      const sp = Math.pow(Math.max(0, nx * HALF[0] + ny * HALF[1] + nz * HALF[2]), 34);
+      const v = clamp(10 + d * 52 + sp * 240, 0, 255) | 0;
+      g.fillStyle = 'rgb(' + v + ',' + v + ',' + (v * .985 | 0) + ')';
+      const ro = s === 0 ? 32.5 : 33.4;
+      g.beginPath();
+      g.arc(0, 0, ro, a - w / 2 - e, a + w / 2 + e);
+      g.arc(0, 0, 25.6, a + w / 2 + e, a - w / 2 - e, true);
+      g.closePath(); g.fill();
+    }
+  }
+  g.strokeStyle = 'rgba(0,0,0,0.6)'; g.lineWidth = .9; g.beginPath(); g.arc(0, 0, 33.5, 0, TAU); g.stroke();
+  g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = .8; g.beginPath(); g.arc(0, 0, 25.7, 0, TAU); g.stroke();
+
+  // 铝帽上的放射状刀痕：与光线垂直时才反光，所以转动时会一闪一闪
+  g.save(); g.beginPath(); g.arc(0, 0, 20, 0, TAU); g.clip();
+  g.globalCompositeOperation = 'lighter';
+  for (let m = 0; m < 7; m++) {
+    const a = ptr + .35 + m * .8976 + (m % 2) * .21;
+    const k = Math.pow(Math.abs(Math.sin(a - LANG)), 14);
+    g.fillStyle = 'rgba(255,255,255,' + (.025 + .2 * k).toFixed(3) + ')';
+    g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, 20, a - .03, a + .03); g.closePath(); g.fill();
+  }
+  g.restore();
+
+  // 刻线凹槽：两侧槽壁按朝向受光，转到不同角度明暗互换
+  const px = -sa, py = ca, dl = px * LIGHT[0] + py * LIGHT[1];
+  const wall = (o, b) => {
+    g.strokeStyle = b > .05 ? 'rgba(255,255,255,' + (.12 + .6 * b).toFixed(3) + ')' : 'rgba(0,0,0,0.4)';
+    g.lineWidth = .85; seg(3.8, 18.6, px * o, py * o);
+  };
+  g.strokeStyle = 'rgba(0,0,0,0.55)'; g.lineWidth = 3.8; seg(3.4, 19);
+  wall(1.45, clamp(-dl * 1.5, 0, 1));
+  wall(-1.45, clamp(dl * 1.5, 0, 1));
+  g.strokeStyle = '#f2ebd8'; g.lineWidth = 1.7; seg(4.2, 18.2);
+}
+
+class Knob {
+  constructor(el, value) {
+    this.el = el; this.cv = el.querySelector('canvas'); this.g = this.cv.getContext('2d');
+    this.def = value;
+    this.angle = KMIN + (KMAX - KMIN) * value; this.target = this.angle; this.vel = 0;
+    this.mode = 'idle';          // hold：拖拽中；seek：滚轮/键盘目标；idle：自由滑行
+    this.dirty = true; this.cache = null; this.k = 1; this.lastAria = -1;
+    this.bind();
+  }
+  get value() { return (this.angle - KMIN) / (KMAX - KMIN); }
+  setValue(v) { this.target = KMIN + (KMAX - KMIN) * clamp(v, 0, 1); if (this.mode !== 'hold') this.mode = 'seek'; }
+  nudge(dv) {
+    const base = this.mode === 'idle' ? this.angle : this.target;
+    this.target = clamp(base + dv * (KMAX - KMIN), KMIN, KMAX);
+    if (this.mode !== 'hold') this.mode = 'seek';
+  }
+  bind() {
+    const cv = this.cv;
+    let id = null, lastA = 0, lastY = 0;
+    const center = () => { const r = cv.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2, r.width]; };
+    cv.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
+      id = e.pointerId; cv.setPointerCapture(id);
+      const c = center();
+      lastA = Math.atan2(e.clientY - c[1], e.clientX - c[0]); lastY = e.clientY;
+      this.mode = 'hold'; this.target = this.angle;
+      this.el.classList.add('drag');
+      this.el.focus({ preventScroll: true });
+    });
+    cv.addEventListener('pointermove', e => {
+      if (e.pointerId !== id) return;
+      const c = center(), dx = e.clientX - c[0], dy = e.clientY - c[1];
+      const a = Math.atan2(dy, dx);
+      let d;
+      if (Math.hypot(dx, dy) > c[2] * .14) {          // 绕圆心转动
+        d = a - lastA;
+        if (d > Math.PI) d -= TAU; else if (d < -Math.PI) d += TAU;
+      } else d = -(e.clientY - lastY) / c[2] * 3.2;    // 太靠近圆心时退化为上下拖动
+      lastA = a; lastY = e.clientY;
+      this.target = clamp(this.target + d, KMIN, KMAX);
+    });
+    const end = e => {
+      if (e.pointerId !== id) return;
+      id = null; this.mode = 'idle'; this.el.classList.remove('drag');
+    };
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', end);
+    cv.addEventListener('lostpointercapture', end);
+    cv.addEventListener('wheel', e => {
+      e.preventDefault();
+      const k = e.deltaMode === 1 ? .009 : .00045;
+      this.nudge(-e.deltaY * k * (e.shiftKey ? .25 : 1));
+    }, { passive: false });
+    cv.addEventListener('dblclick', () => this.setValue(this.def));
+    this.el.addEventListener('keydown', e => {
+      const step = e.shiftKey ? .01 : .04;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { this.nudge(step); e.preventDefault(); }
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { this.nudge(-step); e.preventDefault(); }
+      else if (e.key === 'Home') { this.setValue(0); e.preventDefault(); }
+      else if (e.key === 'End') { this.setValue(1); e.preventDefault(); }
+    });
+  }
+  /* 阻尼物理：拖拽时用临界阻尼弹簧追随手指（有“分量感”的轻微滞后），
+     松手后带着余速滑行，被粘滞阻尼拖停；撞到两端止挡会轻轻回弹 */
+  update(dt) {
+    const prev = this.angle, n = Math.max(1, Math.ceil(dt / .004)), h = dt / n;
+    for (let i = 0; i < n; i++) {
+      if (this.mode !== 'idle') {
+        const k = this.mode === 'hold' ? 380 : 220, c = 2 * Math.sqrt(k) * 1.05;
+        this.vel += (k * (this.target - this.angle) - c * this.vel) * h;
+      } else this.vel *= Math.exp(-h * 9);
+      this.angle += this.vel * h;
+      if (this.angle < KMIN) { this.angle = KMIN; if (this.vel < 0) this.vel = -this.vel * .18; }
+      if (this.angle > KMAX) { this.angle = KMAX; if (this.vel > 0) this.vel = -this.vel * .18; }
+    }
+    if (this.mode === 'seek' && Math.abs(this.target - this.angle) < 1e-4 && Math.abs(this.vel) < 1e-3) { this.mode = 'idle'; this.vel = 0; }
+    if (this.mode === 'idle' && Math.abs(this.vel) < 2e-3) this.vel = 0;
+    if (Math.abs(this.angle - prev) > 1e-6) this.dirty = true;
+    const v = Math.round(this.value * 100) / 10;
+    if (v !== this.lastAria) { this.lastAria = v; this.el.setAttribute('aria-valuenow', v.toFixed(1)); }
+  }
+  resize(dpr) {
+    const r = this.cv.getBoundingClientRect(), px = Math.max(40, Math.round(r.width * dpr));
+    if (px === this.cv.width && this.cache) return;
+    this.cv.width = this.cv.height = px; this.k = px / 132;
+    const c = document.createElement('canvas'); c.width = c.height = px;
+    const g = c.getContext('2d'); g.setTransform(this.k, 0, 0, this.k, px / 2, px / 2);
+    drawKnobStatic(g);
+    this.cache = c; this.dirty = true;
+  }
+  draw() {
+    if (!this.dirty || !this.cache) return;
+    this.dirty = false;
+    const g = this.g, S = this.cv.width;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, S, S); g.drawImage(this.cache, 0, 0);
+    g.setTransform(this.k, 0, 0, this.k, S / 2, S / 2);
+    drawKnobDynamic(g, this.angle);
+  }
+}
+
+/* ================= 电源拨片开关 ================= */
+function drawToggleStatic(g) {
+  let gr = g.createRadialGradient(2, 3, 14, 2, 3, 30);
+  gr.addColorStop(0, 'rgba(0,0,0,0.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.beginPath(); g.arc(2, 3, 30, 0, TAU); g.fill();
+  // 垫圈
+  g.save(); g.beginPath(); g.arc(0, 0, 22, 0, TAU); g.clip(); spun(g, 22, .34, .3); g.restore();
+  bevel(g, 21.5, 1.1, .45, .6);
+  // 六角螺母：每个倒角面按法线着色
+  const hex = r => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + Math.PI / 6; i ? g.lineTo(Math.cos(a) * r, Math.sin(a) * r) : g.moveTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); };
+  g.fillStyle = 'rgba(0,0,0,0.45)'; hex(16.4); g.fill();
+  for (let i = 0; i < 6; i++) {
+    const a0 = i * TAU / 6 + Math.PI / 6, a1 = a0 + TAU / 6, am = (a0 + a1) / 2;
+    const nx = Math.cos(am) * .6, ny = Math.sin(am) * .6, nz = .8;
+    const d = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+    const sp = Math.pow(Math.max(0, nx * HALF[0] + ny * HALF[1] + nz * HALF[2]), 20);
+    const v = clamp(46 + d * 120 + sp * 150, 0, 255) | 0;
+    g.fillStyle = 'rgb(' + v + ',' + (v + 2) + ',' + (v + 4) + ')';
+    g.beginPath();
+    g.moveTo(Math.cos(a0) * 15.5, Math.sin(a0) * 15.5); g.lineTo(Math.cos(a1) * 15.5, Math.sin(a1) * 15.5);
+    g.lineTo(Math.cos(a1) * 12, Math.sin(a1) * 12); g.lineTo(Math.cos(a0) * 12, Math.sin(a0) * 12);
+    g.closePath(); g.fill();
+  }
+  gr = g.createLinearGradient(-10, -10, 10, 10);
+  gr.addColorStop(0, '#c9cdd1'); gr.addColorStop(.5, '#8a8f94'); gr.addColorStop(1, '#4a4e52');
+  g.fillStyle = gr; hex(12); g.fill();
+  // 螺纹套管
+  gr = g.createRadialGradient(-2, -3, 1, 0, 0, 9);
+  gr.addColorStop(0, '#c5c9cd'); gr.addColorStop(1, '#43474b');
+  g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 9, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = .5;
+  for (let r = 4.8; r < 9; r += 1.05) { g.beginPath(); g.arc(0, 0, r, 0, TAU); g.stroke(); }
+  g.fillStyle = '#0c0c0c'; g.beginPath(); g.arc(0, 0, 4.5, 0, TAU); g.fill();
+}
+
+/* 正视角下的蝙蝠柄：按 3D 倾角做透视投影，杆越靠近观察者越粗，端面高光随倾角移动 */
+function drawLever(g, p) {
+  const al = p * 26 * Math.PI / 180, L = 46, Dc = 230, n = 16, ys = [], rs = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, z = t * L * Math.cos(al), sc = Dc / (Dc - z);
+    ys.push(-t * L * Math.sin(al) * sc);
+    rs.push((3.3 + 2.6 * Math.pow(t, 1.8)) * sc);
+  }
+  const tipY = ys[n], tipR = rs[n];
+  // 落在面板上的软影子
+  const zt = L * Math.cos(al), shx = zt * .3, shy = -L * Math.sin(al) + zt * .4;
+  g.lineCap = 'round';
+  const shadows = [[11, .1], [7, .14], [4, .16]];
+  for (let i = 0; i < shadows.length; i++) {
+    g.strokeStyle = 'rgba(0,0,0,' + shadows[i][1] + ')'; g.lineWidth = shadows[i][0];
+    g.beginPath(); g.moveTo(1.5, 2); g.lineTo(shx, shy); g.stroke();
+  }
+  // 镀铬杆身
+  const gr = g.createLinearGradient(-tipR, 0, tipR, 0);
+  gr.addColorStop(0, '#3b3e41'); gr.addColorStop(.16, '#b9bec2'); gr.addColorStop(.3, '#f7f9fa'); gr.addColorStop(.46, '#8e9398');
+  gr.addColorStop(.7, '#45494d'); gr.addColorStop(.86, '#a7acb1'); gr.addColorStop(1, '#2e3134');
+  g.fillStyle = gr;
+  g.beginPath(); g.moveTo(-rs[0], ys[0]);
+  for (let i = 1; i <= n; i++) g.lineTo(-rs[i], ys[i]);
+  for (let i = n; i >= 0; i--) g.lineTo(rs[i], ys[i]);
+  g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = .6; g.stroke();
+  // 端面
+  const ry = tipR * Math.max(.2, Math.cos(al));
+  const hg = g.createRadialGradient(-tipR * .35, tipY - ry * (.28 + .22 * p), .3, 0, tipY, tipR * 1.08);
+  hg.addColorStop(0, 'rgba(255,255,255,' + (.55 + .4 * (p * .5 + .5)).toFixed(3) + ')');
+  hg.addColorStop(.28, '#c3c8cc'); hg.addColorStop(.72, '#5f6468'); hg.addColorStop(1, '#2a2d30');
+  g.fillStyle = hg; g.beginPath(); g.ellipse(0, tipY, tipR, ry, 0, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.45)'; g.lineWidth = .6; g.stroke();
+}
+
+class Toggle {
+  constructor(cv) {
+    this.cv = cv; this.g = cv.getContext('2d');
+    this.p = -1; this.v = 0; this.target = -1; this.bias = 0;
+    this.dirty = true; this.cache = null; this.k = 1;
+    let id = null, y0 = 0, moved = false, done = false;
+    cv.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault(); id = e.pointerId; cv.setPointerCapture(id);
+      y0 = e.clientY; moved = false; done = false;
+      cv.focus({ preventScroll: true });
+    });
+    cv.addEventListener('pointermove', e => {
+      if (e.pointerId !== id || done) return;
+      const sc = cv.getBoundingClientRect().height / 150 * 1.3, dy = (e.clientY - y0) / sc;
+      if (Math.abs(dy) > 3) moved = true;
+      const want = dy < 0 ? 1 : -1, cur = pw.on ? 1 : -1;
+      if (want !== cur) {
+        if (Math.abs(dy) > 18) { setPower(want > 0); done = true; this.bias = 0; }   // 推过中点：啪地翻过去
+        else this.bias = -dy / 18 * .55;                                           // 未过中点：跟手抬起，松手弹回
+      } else this.bias = 0;
+    });
+    const end = e => {
+      if (e.pointerId !== id) return;
+      id = null; this.bias = 0;
+      if (!moved && !done) setPower(!pw.on);   // 直接点击也能拨动
+    };
+    cv.addEventListener('pointerup', end);
+    cv.addEventListener('pointercancel', e => { if (e.pointerId === id) { id = null; this.bias = 0; } });
+    cv.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setPower(!pw.on); } });
+  }
+  update(dt) {
+    const prev = this.p, n = Math.max(1, Math.ceil(dt / .003)), h = dt / n;
+    for (let i = 0; i < n; i++) {
+      // 过中心弹簧：目标点设在止挡之外，拨片会被“甩”到底并轻微回弹
+      const goal = this.target * 1.35 + this.bias;
+      this.v += (650 * (goal - this.p) - 13 * this.v) * h;
+      this.p += this.v * h;
+      if (this.p > 1) { this.p = 1; if (this.v > 0) this.v = -this.v * .15; }
+      else if (this.p < -1) { this.p = -1; if (this.v < 0) this.v = -this.v * .15; }
+    }
+    if (Math.abs(this.p) > .9999 && Math.sign(this.p) === this.target && this.bias === 0 && Math.abs(this.v) < .8) { this.p = this.target; this.v = 0; }
+    if (Math.abs(this.p - prev) > 1e-5) this.dirty = true;
+  }
+  resize(dpr) {
+    const r = this.cv.getBoundingClientRect();
+    const w = Math.max(20, Math.round(r.width * dpr)), h = Math.max(20, Math.round(r.height * dpr));
+    if (w === this.cv.width && h === this.cv.height && this.cache) return;
+    this.cv.width = w; this.cv.height = h; this.k = w / 120 * 1.3;
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.setTransform(this.k, 0, 0, this.k, w / 2, h * 76 / 150);
+    drawToggleStatic(g);
+    this.cache = c; this.dirty = true;
+  }
+  draw() {
+    if (!this.dirty || !this.cache) return;
+    this.dirty = false;
+    const g = this.g, W = this.cv.width, H = this.cv.height;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, W, H); g.drawImage(this.cache, 0, 0);
+    g.setTransform(this.k, 0, 0, this.k, W / 2, H * 76 / 150);
+    drawLever(g, this.p);
+  }
+}
+
+/* ================= 状态 ================= */
+const pw = { on: false, phase: 'off', t: 10, sx: 0, sy: 0, sx0: 0, sy0: 0, grat0: 0, beam: 0, glow: 0, grat: 0, text: 0, typing: 0, dotI: 0, dotSize: 1 };
+const state = { mode: 'sum', mix: 0 };
+const P = { f: 2, A: .7, phi: Math.PI / 2, phiDeg: 90, ratio: 2, lock: null, taper: 0, roll: 0, s0: 0, mix: 0 };
+
+/* 利萨茹频率比的“磁吸”锁定：靠近 1:1、2:3、1:2 … 时锁死为闭合图形，
+   离开锁定区后频率比连续变化，图形按失谐量缓慢漂移旋转 */
+function lockRatio(raw) {
+  const c = clamp(Math.round(raw * 2) / 2, 1, 5), d = raw - c, w = .065;
+  const e = Math.abs(d) <= w ? 0 : Math.sign(d) * (Math.abs(d) - w) / (.25 - w) * .25;
+  return { c, eps: e, r: c + e, locked: e === 0 };
+}
+const ratioStr = c => Number.isInteger(c) ? '1:' + c : '2:' + Math.round(c * 2);
+
+/* ================= CRT 渲染器 ================= */
+const crt = (() => {
+  const glass = $('#glass'), cv = $('#crt'), ctx = cv.getContext('2d', { alpha: false });
+  const scan = $('#scan'), sg = scan.getContext('2d');
+  const mk = alpha => { const c = document.createElement('canvas'); c.width = c.height = 2; return [c, c.getContext('2d', { alpha })]; };
+  const [phos, pg] = mk(false);                                   // 荧光粉累积缓冲（余晖）
+  const [b1, g1] = mk(false), [b2, g2] = mk(false), [b3, g3] = mk(false), [b4, g4] = mk(false);   // 光晕金字塔
+  const [base, bg] = mk(false), [gLit, glg] = mk(true), [gDark, gdg] = mk(true), [field, fg] = mk(true);
+  const K = .055;                         // 曲面玻璃的桶形畸变系数
+  let W = 0, H = 0, cx = 1, cy = 1, R = 1, D = 1, u = 1;
+  let cleanAcc = 0, idleDrawn = false, extent = 0;
+  const MAXN = 2600;
+  const AX = new Float32Array(MAXN), AY = new Float32Array(MAXN), CX = new Float32Array(MAXN), CY = new Float32Array(MAXN);
+  const BX = new Float32Array(MAXN), BY = new Float32Array(MAXN), SI = new Float32Array(MAXN), WI = new Float32Array(MAXN), TI = new Float32Array(MAXN);
+  const SB = new Int8Array(MAXN);
+  const EDGE = [.16, .42, .6, .8, 1.05, 1.4, 1.9, 1e9];
+  const BI = [.3, .5, .7, .92, 1.2, 1.6, 2.15];
+
+  function mapG(x, y) {
+    const X = x * D, Y = -y * D, nx = X / R, ny = Y / R, f = 1 + K * (nx * nx + ny * ny);
+    return [cx + X * f, cy + Y * f];
+  }
+  function pl(g, x0, y0, x1, y1, n) {
+    let p = mapG(x0, y0); g.moveTo(p[0], p[1]);
+    for (let i = 1; i <= n; i++) { const t = i / n; p = mapG(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t); g.lineTo(p[0], p[1]); }
+  }
+  function gratPath(g) {
+    g.beginPath();
+    for (let i = -5; i <= 5; i++) pl(g, i, -4, i, 4, 32);
+    for (let j = -4; j <= 4; j++) pl(g, -5, j, 5, j, 40);
+    for (let k = -24; k <= 24; k++) if (k % 5) { const x = k / 5; pl(g, x, -.1, x, .1, 1); pl(g, x, 4, x, 3.9, 1); pl(g, x, -4, x, -3.9, 1); }
+    for (let k = -19; k <= 19; k++) if (k % 5) { const y = k / 5; pl(g, -.1, y, .1, y, 1); pl(g, -5, y, -4.9, y, 1); pl(g, 5, y, 4.9, y, 1); }
+  }
+  function buildGrat(g, col, glow, lab) {
+    g.clearRect(0, 0, W, H); g.lineCap = 'round'; g.lineJoin = 'round';
+    if (glow) { g.strokeStyle = glow; g.lineWidth = 3.4 * u; gratPath(g); g.stroke(); }
+    g.strokeStyle = col; g.lineWidth = 1.05 * u; gratPath(g); g.stroke();
+    g.setLineDash([2.2 * u, 4.4 * u]); g.lineWidth = .9 * u;
+    g.beginPath(); pl(g, -5, 2.5, 5, 2.5, 40); pl(g, -5, -2.5, 5, -2.5, 40); g.stroke();
+    g.setLineDash([]);
+    g.fillStyle = lab; g.font = Math.round(D * .15) + 'px "Helvetica Neue",Arial,sans-serif';
+    g.textBaseline = 'middle'; g.textAlign = 'left';
+    const labels = [[2.5, '100'], [2, '90'], [-2, '10'], [-2.5, '0%']];
+    for (let i = 0; i < labels.length; i++) { const p = mapG(-4.86, labels[i][0] + .17); g.fillText(labels[i][1], p[0], p[1]); }
+  }
+  function buildBase() {
+    const gr = bg.createRadialGradient(cx, cy * .94, 0, cx, cy, R * 1.02);
+    gr.addColorStop(0, '#121a14'); gr.addColorStop(.55, '#0b110d'); gr.addColorStop(1, '#030504');
+    bg.fillStyle = gr; bg.fillRect(0, 0, W, H);
+    // 荧光粉涂层的细微颗粒
+    const n = 96, t = document.createElement('canvas'); t.width = t.height = n;
+    const tg = t.getContext('2d'), im = tg.createImageData(n, n);
+    for (let i = 0; i < n * n; i++) { const v = Math.random() * 255; im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = v; im.data[i * 4 + 3] = 8; }
+    tg.putImageData(im, 0, 0);
+    bg.fillStyle = bg.createPattern(t, 'repeat'); bg.fillRect(0, 0, W, H);
+  }
+  function buildField() {
+    fg.setTransform(1, 0, 0, 1, 0, 0); fg.clearRect(0, 0, W, H);
+    fg.setTransform(W / 2, 0, 0, H / 2, cx, cy);          // 椭圆渐变：四边都衰减到 0，压扁成线时两端柔和
+    const gr = fg.createRadialGradient(0, 0, 0, 0, 0, 1);
+    gr.addColorStop(0, 'rgba(70,255,130,1)'); gr.addColorStop(.45, 'rgba(50,235,110,.72)'); gr.addColorStop(.8, 'rgba(35,200,90,.22)'); gr.addColorStop(1, 'rgba(30,180,80,0)');
+    fg.fillStyle = gr; fg.fillRect(-1, -1, 2, 2);
+    fg.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  /* 扫描线：按同样的桶形畸变弯曲，以 multiply 叠加，只在发光处可见 */
+  function buildScan() {
+    scan.width = W; scan.height = H;
+    sg.fillStyle = '#fff'; sg.fillRect(0, 0, W, H);
+    const sp = Math.max(2.4, 3 * W / 600);
+    sg.strokeStyle = 'rgb(192,196,192)'; sg.lineWidth = sp * .42;
+    sg.beginPath();
+    for (let y = -cy - sp; y <= cy + sp; y += sp) {
+      for (let i = 0; i <= 24; i++) {
+        const x = -cx * 1.04 + 2.08 * cx * i / 24, nx = x / R, ny = y / R, f = 1 + K * (nx * nx + ny * ny);
+        if (i) sg.lineTo(cx + x * f, cy + y * f); else sg.moveTo(cx + x * f, cy + y * f);
+      }
+    }
+    sg.stroke();
+  }
+  function resize() {
+    const r = glass.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = r.width * dpr, h = r.height * dpr;
+    const cap = 1.8e6;
+    if (w * h > cap) { const f = Math.sqrt(cap / (w * h)); w *= f; h *= f; }
+    w = Math.max(80, Math.round(w)); h = Math.max(64, Math.round(h));
+    if (w === W && h === H) return;
+    W = w; H = h;
+    [cv, phos, base, gLit, gDark, field].forEach(c => { c.width = W; c.height = H; });
+    const sub = (c, d) => { c.width = Math.max(1, Math.round(W / d)); c.height = Math.max(1, Math.round(H / d)); };
+    sub(b1, 2); sub(b2, 4); sub(b3, 8); sub(b4, 16);
+    [g1, g2, g3, g4].forEach(g => { g.imageSmoothingEnabled = true; try { g.imageSmoothingQuality = 'medium'; } catch (e) {} });
+    cx = W / 2; cy = H / 2; R = Math.hypot(cx, cy);
+    D = Math.min(W * .47 / 5, H * .47 / 4);
+    for (let i = 0; i < 4; i++) {
+      const nx = 5 * D / R, ny = 4 * D / R, f = 1 + K * (nx * nx + ny * ny);
+      D = Math.min(W * .466 / (5 * f), H * .466 / (4 * f));
+    }
+    u = D / 53;
+    pg.fillStyle = '#000'; pg.fillRect(0, 0, W, H);
+    buildBase();
+    buildGrat(gdg, 'rgba(175,190,175,0.15)', null, 'rgba(175,190,175,0.2)');
+    buildGrat(glg, 'rgba(120,225,145,0.27)', 'rgba(70,220,115,0.055)', 'rgba(130,230,150,0.4)');
+    buildField(); buildScan();
+    idleDrawn = false;
+  }
+
+  /* ---------- 波形 ---------- */
+  function sumCurve(N, X, Y) {
+    const f = P.f, A = P.A * 4 / 1.6, ph = P.phi, roll = P.roll;
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1), th = TAU * f * t + roll;
+      X[i] = -5 + 10 * t;
+      Y[i] = A * (Math.sin(th) + .6 * Math.sin(2 * th + ph));      // 基波 + 二次谐波，相位差 φ
+    }
+  }
+  function lissCurve(N, X, Y) {
+    const A = P.A * 3.6, r = P.ratio, ph = P.phi, s0 = P.s0, span = TAU * 4;
+    for (let i = 0; i < N; i++) {
+      const s = s0 + span * i / (N - 1);
+      X[i] = A * Math.sin(s + ph);
+      Y[i] = A * Math.sin(r * s);
+    }
+  }
+  function bucketOf(v) { if (v < EDGE[0]) return -1; for (let b = 0; b < 7; b++) if (v < EDGE[b + 1]) return b; return 6; }
+
+  function computeBeam() {
+    const mix = P.mix;
+    const nS = clamp(Math.ceil(140 + 110 * P.f), 300, 900);
+    const nL = clamp(Math.ceil(4 * (36 + 84 * P.ratio)), 400, 2400);
+    let N;
+    if (mix <= 1e-4) { N = nS; sumCurve(N, AX, AY); }
+    else if (mix >= 1 - 1e-4) { N = nL; lissCurve(N, AX, AY); }
+    else {                                   // 模式切换时两种轨迹互相变形
+      N = Math.max(nS, nL); sumCurve(N, AX, AY); lissCurve(N, CX, CY);
+      for (let i = 0; i < N; i++) { AX[i] = lerp(AX[i], CX[i], mix); AY[i] = lerp(AY[i], CY[i], mix); }
+    }
+    const taper = mix * P.taper;
+    const sx = pw.sx, sy = pw.sy, flat = 1 - sstep(0, .55, sy);
+    extent = 0;
+    for (let i = 0; i < N; i++) {
+      const t = i / (N - 1);
+      WI[i] = taper > 0 ? lerp(1, sstep(0, .14, t) * sstep(1, .86, t), taper) : 1;
+      let gx = AX[i];
+      if (flat > 0) {                        // 偏转收缩时退化为满幅水平扫描线
+        const c = t * 4, fr = c - Math.floor(c), tri = fr < .5 ? -1 + 4 * fr : 3 - 4 * fr;
+        gx = lerp(gx, lerp(-5 + 10 * t, 5 * tri, mix), flat);
+      }
+      const x = gx * D * sx, y = -AY[i] * D * sy, nx = x / R, ny = y / R, f = 1 + K * (nx * nx + ny * ny);
+      const X = x * f, Y = y * f;
+      BX[i] = cx + X; BY[i] = cy + Y;
+      const e = Math.max(Math.abs(X), Math.abs(Y)); if (e > extent) extent = e;
+    }
+    // 电子束扫过得越慢，荧光越亮（波峰、拐点更亮，陡沿更暗）
+    let sum = 0;
+    for (let i = 0; i < N - 1; i++) { const l = Math.hypot(BX[i + 1] - BX[i], BY[i + 1] - BY[i]); SI[i] = l; sum += l; }
+    const mean = sum / (N - 1) + 1e-6;
+    for (let i = 0; i < N - 1; i++) SI[i] = clamp(Math.pow(mean / Math.max(SI[i], mean * .06), .55), .3, 2.4);
+    for (let i = 0; i < N - 1; i++) TI[i] = (SI[Math.max(0, i - 1)] + 2 * SI[i] + SI[Math.min(N - 2, i + 1)]) * .25 * WI[i];
+    let bk = -1;
+    for (let i = 0; i < N - 1; i++) {
+      const v = TI[i];
+      if (v < EDGE[0]) { SB[i] = -1; continue; }
+      if (bk < 0 || v < EDGE[bk] * .92 || v > EDGE[bk + 1] * 1.08) bk = bucketOf(v);
+      SB[i] = bk;
+    }
+    const nz = .006 * D;                     // 模拟电路底噪造成的轻微抖动
+    for (let i = 0; i < N; i++) { BX[i] += (Math.random() - .5) * nz; BY[i] += (Math.random() - .5) * nz; }
+    return N;
+  }
+
+  function drawBeam(N, a, gain) {
+    pg.lineJoin = 'round'; pg.lineCap = 'round';
+    const halo = new Path2D(); let open = false;
+    for (let i = 0; i < N - 1; i++) {
+      if (SB[i] < 0) { open = false; continue; }
+      if (!open) { halo.moveTo(BX[i], BY[i]); open = true; }
+      halo.lineTo(BX[i + 1], BY[i + 1]);
+    }
+    pg.strokeStyle = 'rgba(40,255,100,' + clamp(.1 * gain * a, 0, 1).toFixed(4) + ')';
+    pg.lineWidth = 7 * u; pg.stroke(halo);
+    const paths = []; let cur = -2;
+    for (let i = 0; i < N - 1; i++) {
+      const b = SB[i];
+      if (b < 0) { cur = -2; continue; }
+      let p = paths[b]; if (!p) p = paths[b] = new Path2D();
+      if (b !== cur) { p.moveTo(BX[i], BY[i]); cur = b; }
+      p.lineTo(BX[i + 1], BY[i + 1]);
+    }
+    for (let b = 0; b < 7; b++) {
+      const p = paths[b]; if (!p) continue;
+      const I = BI[b] * gain;
+      pg.strokeStyle = 'rgba(80,255,130,' + clamp(.42 * I * a, 0, 1).toFixed(4) + ')'; pg.lineWidth = 2.7 * u; pg.stroke(p);
+      pg.strokeStyle = 'rgba(205,255,215,' + clamp(.7 * I * a, 0, 1).toFixed(4) + ')'; pg.lineWidth = 1.15 * u; pg.stroke(p);
+    }
+  }
+  function drawDot(I, a, size) {
+    const r = (5 + 5 * size) * u, al = clamp(I * a, 0, 1);
+    const gr = pg.createRadialGradient(cx, cy, 0, cx, cy, r);
+    gr.addColorStop(0, 'rgba(240,255,245,' + al.toFixed(4) + ')');
+    gr.addColorStop(.22, 'rgba(150,255,175,' + (al * .7).toFixed(4) + ')');
+    gr.addColorStop(.6, 'rgba(50,255,110,' + (al * .18).toFixed(4) + ')');
+    gr.addColorStop(1, 'rgba(30,255,90,0)');
+    pg.fillStyle = gr; pg.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+  }
+  function readout() {
+    const ph = String(Math.round(P.phiDeg) % 360).padStart(3, '0') + '°';
+    const vp = (P.A * 4).toFixed(2);
+    if (state.mode === 'sum') return [
+      { x: -4.84, y: 3.66, al: 'left', t: 'CH1+CH2  ADD' },
+      { x: 4.84, y: 3.66, al: 'right', t: 'Δφ ' + ph },
+      { x: -4.84, y: -3.7, al: 'left', t: 'f ' + Math.round(P.f * 200) + 'Hz  ' + vp + 'Vp' },
+      { x: 4.84, y: -3.7, al: 'right', t: '0.5ms  1V/DIV' }
+    ];
+    const lk = P.lock;
+    return [
+      { x: -4.84, y: 3.66, al: 'left', t: 'X-Y  LISSAJOUS' },
+      { x: 4.84, y: 3.66, al: 'right', t: 'Δφ ' + ph },
+      { x: -4.84, y: -3.7, al: 'left', t: 'fx:fy ' + (lk.locked ? ratioStr(lk.c) + '  LOCK' : '1:' + P.ratio.toFixed(2) + ' DRIFT') },
+      { x: 4.84, y: -3.7, al: 'right', t: vp + 'Vp  1V/DIV' }
+    ];
+  }
+  /* 读数字符也由“电子束”写进荧光缓冲，所以数值变化时旧字会留下残影 */
+  function drawReadout(a) {
+    const fs = Math.max(8, Math.round(D * .235));
+    pg.font = fs + 'px ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono","Courier New",monospace';
+    pg.textBaseline = 'middle';
+    pg.fillStyle = 'rgba(130,255,160,' + clamp(.6 * pw.text * a, 0, 1).toFixed(4) + ')';
+    const L = readout();
+    for (let i = 0; i < L.length; i++) {
+      const it = L[i], n = Math.ceil(it.t.length * pw.typing);
+      if (n <= 0) continue;
+      const p = mapG(it.x, it.y);
+      pg.textAlign = it.al; pg.fillText(it.t.slice(0, n), p[0], p[1]);
+    }
+  }
+
+  function render(dt) {
+    if (!W) return;
+    if (pw.phase === 'off' && pw.t > 2.2) {          // 完全熄灭后停止渲染，省电
+      if (!idleDrawn) {
+        ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+        ctx.drawImage(base, 0, 0); ctx.drawImage(gDark, 0, 0);
+        pg.globalCompositeOperation = 'source-over'; pg.fillStyle = '#000'; pg.fillRect(0, 0, W, H);
+        idleDrawn = true;
+      }
+      return;
+    }
+    idleDrawn = false;
+    // 1) 荧光余晖：整屏按时间常数指数衰减（与帧率无关）
+    // 关机时余晖更短，让“压线 → 缩点”的过程清楚可见；亮点本身按自己的包络单独绘制
+    const tau = pw.phase === 'stopping' ? .12 : pw.phase === 'off' ? .2 : .16;
+    const a = 1 - Math.exp(-dt / tau);
+    pg.globalCompositeOperation = 'source-over'; pg.globalAlpha = 1;
+    pg.fillStyle = 'rgba(0,0,0,' + a.toFixed(4) + ')'; pg.fillRect(0, 0, W, H);
+    // 8 位缓冲指数衰减会卡在很小的值上留下“鬼影”，用 color-burn 每秒约 55 次各减去 1/255
+    cleanAcc += dt;
+    if (cleanAcc >= 1 / 55) {
+      cleanAcc = 0;
+      pg.globalCompositeOperation = 'color-burn'; pg.fillStyle = 'rgb(254,254,254)'; pg.fillRect(0, 0, W, H);
+    }
+    // 2) 电子束（加色混合写入荧光缓冲）
+    pg.globalCompositeOperation = 'lighter';
+    const conc = clamp(Math.pow(Math.max(pw.sx, .0025) * Math.max(pw.sy, .0025), -.42), 1, 6.5);   // 偏转收缩时能量集中，更亮
+    if (pw.dotI > .01) drawDot(pw.dotI, a, pw.dotSize);
+    else if (pw.beam > .001) {
+      const N = computeBeam();
+      if (extent < 1.8 * u) drawDot(pw.beam * conc * .8, a, .3);
+      else drawBeam(N, a, pw.beam * conc);
+    }
+    if (pw.text > .001) drawReadout(a);
+    pg.globalCompositeOperation = 'source-over';
+    // 3) 光晕：逐级二分降采样
+    g1.drawImage(phos, 0, 0, b1.width, b1.height);
+    g2.drawImage(b1, 0, 0, b2.width, b2.height);
+    g3.drawImage(b2, 0, 0, b3.width, b3.height);
+    g4.drawImage(b3, 0, 0, b4.width, b4.height);
+    // 4) 合成：玻璃底色 → 荧光底辉 → 刻度 → 荧光 + 光晕
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
+    ctx.drawImage(base, 0, 0);
+    const ga = pw.glow * .05 * clamp(1 / (Math.max(pw.sx, .004) * Math.max(pw.sy, .004)), 1, 12);
+    if (ga > .002) {
+      const fw = W * Math.max(pw.sx, .004), fh = H * Math.max(pw.sy, .004);
+      ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.min(1, ga);
+      ctx.drawImage(field, cx - fw / 2, cy - fh / 2, fw, fh);
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    ctx.globalAlpha = 1 - .45 * pw.grat; ctx.drawImage(gDark, 0, 0);
+    ctx.globalCompositeOperation = 'lighter';
+    if (pw.grat > .002) { ctx.globalAlpha = pw.grat; ctx.drawImage(gLit, 0, 0); }
+    ctx.globalAlpha = 1; ctx.drawImage(phos, 0, 0);
+    ctx.globalAlpha = .36; ctx.drawImage(b2, 0, 0, W, H);
+    ctx.globalAlpha = .42; ctx.drawImage(b3, 0, 0, W, H);
+    ctx.globalAlpha = .5; ctx.drawImage(b4, 0, 0, W, H);
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
+  return { resize, render };
+})();
+
+/* ================= 电源时序 ================= */
+const tgEl = $('#toggle');
+let autoTimer = 0;
+function setPower(on) {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = 0; }
+  if (on === pw.on) return;
+  pw.on = on; pw.t = 0; pw.sx0 = pw.sx; pw.sy0 = pw.sy; pw.grat0 = pw.grat;
+  pw.phase = on ? 'starting' : 'stopping';
+  toggle.target = on ? 1 : -1; toggle.bias = 0;
+  scopeEl.classList.toggle('powered', on);
+  tgEl.setAttribute('aria-checked', String(on));
+}
+function updatePower(dt) {
+  pw.t += dt; const t = pw.t;
+  if (pw.phase === 'starting') {
+    // 亮点 → 横向拉成一条亮线 → 纵向展开（带一点过冲）
+    const cold = pw.sx0 < .02;
+    const t1 = cold ? .16 : 0, tx = .26 * (1 - pw.sx0), t2 = t1 + tx;
+    const sy0 = Math.max(pw.sy0, .0045), t3 = t2 + (pw.sy0 < .05 ? .07 : 0), ty = .62 * (1 - pw.sy0), t4 = t3 + ty;
+    pw.beam = cold ? sstep(0, t1, t) : 1;
+    pw.sx = t < t1 ? pw.sx0 : t < t2 ? lerp(pw.sx0, 1, easeOutCubic((t - t1) / tx)) : 1;
+    pw.sy = t < t3 ? sy0 : t < t4 ? lerp(sy0, 1, pw.sy0 < .05 ? easeOutBack((t - t3) / ty, 1.15) : easeOutCubic((t - t3) / ty)) : 1;
+    pw.glow = 1;
+    pw.grat = lerp(pw.grat0, 1, sstep(t3 + .15, t4 + .5, t));
+    pw.text = sstep(t4 + .1, t4 + .3, t);
+    pw.typing = clamp((t - t4 - .1) / .7, 0, 1);
+    pw.dotI = 0;
+    if (t > t4 + .85) pw.phase = 'on';
+  } else if (pw.phase === 'on') {
+    pw.sx = pw.sy = pw.beam = pw.glow = pw.grat = pw.text = pw.typing = 1; pw.dotI = 0;
+  } else if (pw.phase === 'stopping') {
+    // 纵向压成横线 → 横向缩成亮点 → 亮点慢慢熄灭
+    const ty = .2 * Math.max(pw.sy0, .05), tx = .34 * Math.max(pw.sx0, .05), t1 = ty, t2 = ty + tx;
+    pw.sy = t < t1 ? lerp(pw.sy0, .004, easeInCubic(t / ty)) : .004;
+    pw.sx = t < t1 ? pw.sx0 : t < t2 ? lerp(pw.sx0, .003, easeInOut((t - t1) / tx)) : .003;
+    pw.grat = pw.grat0 * (1 - sstep(0, .25, t));
+    pw.text = 0; pw.typing = 0;
+    if (t < t2) { pw.beam = 1; pw.glow = 1; pw.dotI = 0; }
+    else {
+      const k = t - t2;
+      pw.beam = 0; pw.glow = 1 - sstep(0, .12, k);
+      pw.dotI = 6.5 * Math.exp(-k / .28); pw.dotSize = Math.exp(-k / .6);
+    }
+    if (t > t2 + 1.5) { pw.phase = 'off'; pw.t = 0; pw.dotI = 0; }
+  } else {
+    pw.sx = pw.sy = 0; pw.beam = pw.glow = pw.grat = pw.text = pw.dotI = 0;
+  }
+}
+
+/* ================= 模式 ================= */
+const keyEls = Array.from(document.querySelectorAll('.key'));
+const freqSub = $('#freq-sub');
+function setMode(m) {
+  state.mode = m;
+  keyEls.forEach(k => k.setAttribute('aria-pressed', String(k.dataset.mode === m)));
+  freqSub.textContent = m === 'xy' ? '频率比 fx:fy' : '频率';
+}
+keyEls.forEach(k => k.addEventListener('click', () => setMode(k.dataset.mode)));
+
+/* ================= 参数 ================= */
+const knobs = [new Knob($('#k-freq'), .25), new Knob($('#k-amp'), .7), new Knob($('#k-phase'), .25)];
+const toggle = new Toggle(tgEl);
+
+function updateParams(dt) {
+  const vf = knobs[0].value, va = knobs[1].value, vp = knobs[2].value;
+  P.f = .5 + 6 * vf;                    // 屏幕上的基波周期数
+  P.A = .08 + .88 * va;
+  P.phiDeg = vp * 360; P.phi = vp * TAU;
+  P.lock = lockRatio(1 + 4 * vf); P.ratio = P.lock.r;
+  P.taper = sstep(.003, .03, Math.abs(P.lock.eps));
+  P.roll = (P.roll + dt * TAU * P.f * .06) % TAU;     // 波形以 0.6 格/秒缓慢滚动
+  P.s0 += dt * TAU * 1.2;                            // 利萨茹：持续推进的时间窗
+  const tgt = state.mode === 'xy' ? 1 : 0;
+  state.mix = tgt > state.mix ? Math.min(tgt, state.mix + dt / .55) : Math.max(tgt, state.mix - dt / .55);
+  P.mix = easeInOut(state.mix);
+}
+
+/* ================= 键盘 ================= */
+window.addEventListener('keydown', e => {
+  if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k === 'p') setPower(!pw.on);
+  else if (k === 'm') setMode(state.mode === 'sum' ? 'xy' : 'sum');
+  else if (k === '1') setMode('sum');
+  else if (k === '2') setMode('xy');
+});
+scopeEl.addEventListener('contextmenu', e => e.preventDefault());
+// 只有用 Tab 键盘导航时才显示焦点框；鼠标/触摸操作时不显示
+window.addEventListener('keydown', e => { if (e.key === 'Tab') document.body.classList.add('kbd-nav'); }, true);
+window.addEventListener('pointerdown', () => document.body.classList.remove('kbd-nav'), true);
+
+/* ================= 布局缩放 ================= */
+const stageEl = $('#stage');
+function layout() {
+  // 用舞台自身尺寸（= 可视区域），不用 innerWidth：移动端内容溢出时 innerWidth 会被撑大
+  const vw = stageEl.clientWidth || document.documentElement.clientWidth || window.innerWidth;
+  const vh = stageEl.clientHeight || document.documentElement.clientHeight || window.innerHeight;
+  const key = vw / vh < .92 ? 'tall' : 'wide';
+  scopeEl.dataset.layout = key;
+  const s = Math.min(vw / LAYOUT[key][0], vh / LAYOUT[key][1]) * .965;
+  scopeEl.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  crt.resize();
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  knobs.forEach(k => k.resize(dpr));
+  toggle.resize(dpr);
+}
+let rz = 0;
+window.addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(layout); });
+layout();
+
+/* ================= 主循环 ================= */
+let last = performance.now();
+function frame(now) {
+  const dt = clamp((now - last) / 1000, 0, .05); last = now;
+  for (let i = 0; i < knobs.length; i++) { knobs[i].update(dt); knobs[i].draw(); }
+  toggle.update(dt); toggle.draw();
+  updatePower(dt);
+  updateParams(dt);
+  crt.render(dt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// 打开页面后自动拨上电源，演示开机动画
+autoTimer = setTimeout(() => { autoTimer = 0; setPower(true); }, 700);
+})();
+</script>
+</body>
+</html>
